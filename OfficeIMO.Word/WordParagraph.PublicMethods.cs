@@ -3,6 +3,7 @@ using System.IO;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Linq;
 using System.Collections.Generic;
+using Anchor = DocumentFormat.OpenXml.Drawing.Wordprocessing.Anchor;
 
 namespace OfficeIMO.Word {
     public partial class WordParagraph {
@@ -19,6 +20,24 @@ namespace OfficeIMO.Word {
             return wordParagraph;
         }
 
+        /// <summary>
+        /// Add image from file with ability to provide width and height of the image
+        /// and a predefined object anchor. The image will be resized given new dimensions
+        /// </summary>
+        /// <param name="customAnchor">Custom defined object anchor for image</param>
+        /// <param name="filePathImage">Path to file to import to Word Document</param>
+        /// <param name="width">Optional width of the image. If not given the actual image width will be used.</param>
+        /// <param name="height">Optional height of the image. If not given the actual image height will be used.</param>
+        /// <param name="wrapImageText"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
+        public WordParagraph AddImage(Anchor customAnchor, string filePathImage, double? width = null, double? height = null, WrapTextImage wrapImageText = WrapTextImage.InLineWithText, string description = "") {
+            var wordImage = new WordImage(customAnchor, _document, this, filePathImage, width, height, wrapImageText, description);
+            var paragraph = new WordParagraph(_document);
+            VerifyRun();
+            _run.Append(wordImage._Image);
+            return paragraph;
+        }
         /// <summary>
         /// Add image from file with ability to provide width and height of the image
         /// The image will be resized given new dimensions

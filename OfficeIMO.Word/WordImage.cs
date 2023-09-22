@@ -556,8 +556,24 @@ namespace OfficeIMO.Word {
             AddImage(document, paragraph, imageStream, fileName, width, height, shape, compressionQuality, description, wrapImage);
         }
 
-        private Graphic GetGraphic(double emuWidth, double emuHeight, string fileName, string relationshipId, ShapeTypeValues shape, BlipCompressionValues compressionQuality, string description = "") {
+        public WordImage(
+            Anchor customAnchor,
+            WordDocument document,
+            WordParagraph paragraph,
+            string filePath,
+            double? width,
+            double? height,
+            WrapTextImage wrapImage = WrapTextImage.InLineWithText,
+            string description = "",
+            ShapeTypeValues shape = ShapeTypeValues.Rectangle,
+            BlipCompressionValues compressionQuality = BlipCompressionValues.Print) {
+            FilePath = filePath;
+            var fileName = System.IO.Path.GetFileName(filePath);
+            using var imageStream = new FileStream(filePath, FileMode.Open);
+            AddImage(document, paragraph, imageStream, fileName, width, height, shape, compressionQuality, description, wrapImage, customAnchor);
+        }
 
+        public Graphic GetGraphic(double emuWidth, double emuHeight, string fileName, string relationshipId, ShapeTypeValues shape, BlipCompressionValues compressionQuality, string description = "") {
             var shapeProperties = new ShapeProperties();
             var transform2D = new Transform2D();
             var newOffset = new Offset() { X = 0L, Y = 0L };
@@ -805,7 +821,8 @@ namespace OfficeIMO.Word {
             ShapeTypeValues shape,
             BlipCompressionValues compressionQuality,
             string description,
-            WrapTextImage wrapImage
+            WrapTextImage wrapImage,
+            Anchor customAnchor = null
         ) {
             _document = document;
             // Size - https://stackoverflow.com/questions/8082980/inserting-image-into-docx-using-openxml-and-setting-the-size
@@ -855,6 +872,9 @@ namespace OfficeIMO.Word {
             } else {
                 var graphic = GetGraphic(emuWidth, emuHeight, fileName, relationshipId, shape, compressionQuality, description);
                 var anchor = GetAnchor(emuWidth, emuHeight, graphic, imageName, description, wrapImage);
+                if (null != customAnchor) {
+                    anchor = customAnchor;
+                }
                 drawing.Append(anchor);
             }
             this._Image = drawing;
